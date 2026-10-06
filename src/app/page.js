@@ -31,7 +31,7 @@ export default function Home() {
   const [objectif, setObjectif] = useState("entretien");
 
   // --- États des données & UI ---
-  const [availableModels, setAvailableModels] = useState({ ollama: [], gemini: [] });
+ const [availableModels, setAvailableModels] = useState({ ollama: [], gemini: [], groq: [] });
   const [loadingModels, setLoadingModels] = useState(true);
   const [loadingAudit, setLoadingAudit] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
@@ -57,27 +57,29 @@ const handlePreviewPdf = async () => {
   }
 };
   // Charger la liste des modèles au montage
-  useEffect(() => {
-    async function loadModels() {
-      try {
-        const data = await fetchAvailableModels();
-        setAvailableModels(data.providers || { ollama: [], gemini: [] });
-        
-        // Sélectionner un modèle par défaut disponible
-        if (data.providers?.ollama?.length > 0) {
-          setModelName(data.providers.ollama[0]);
-        } else if (data.providers?.gemini?.length > 0) {
-          setProvider("gemini");
-          setModelName(data.providers.gemini[0]);
-        }
-      } catch (err) {
-        console.error("Erreur chargement modèles:", err);
-      } finally {
-        setLoadingModels(false);
+useEffect(() => {
+  async function loadModels() {
+    try {
+      const data = await fetchAvailableModels();
+      setAvailableModels(data.providers || { ollama: [], gemini: [], groq: [] });
+
+      if (data.providers?.ollama?.length > 0) {
+        setModelName(data.providers.ollama[0]);
+      } else if (data.providers?.gemini?.length > 0) {
+        setProvider("gemini");
+        setModelName(data.providers.gemini[0]);
+      } else if (data.providers?.groq?.length > 0) {
+        setProvider("groq");
+        setModelName(data.providers.groq[0]);
       }
+    } catch (err) {
+      console.error("Erreur chargement modèles:", err);
+    } finally {
+      setLoadingModels(false);
     }
-    loadModels();
-  }, []);
+  }
+  loadModels();
+}, []);
 
   // Mettre à jour le modèle sélectionné quand le provider change
   const handleProviderChange = (newProvider) => {
@@ -210,6 +212,7 @@ const handlePreviewPdf = async () => {
               >
                 <option value="ollama">Ollama (Local - Gratuit)</option>
                 <option value="gemini">Google Gemini (Cloud)</option>
+                <option value="groq">Groq (Cloud - Ultra rapide)</option>
               </select>
             </div>
 
